@@ -1,0 +1,23 @@
+int light_sensor = A3;
+int moisture_sensor = A1;
+
+void setup() {
+  Serial.begin(9600); // begin Serial Communication
+}
+
+void loop() {
+  int raw_light = analogRead(light_sensor);      // read the raw value from light sensor pin (A3)
+  int raw_moisture = analogRead(moisture_sensor); // read the raw value from moisture sensor pin (A1)
+
+  int light = map(raw_light, 0, 1023, 0, 100);    // map the value from 0–1023 to 0–100 (percentage)
+  int moisture = map(raw_moisture, 0, 1023, 255, 0); // map moisture inversely (optional)
+
+  // Correct way to print labels and values
+  Serial.print("L:");
+  Serial.println(light);
+
+  Serial.print("M:");
+  Serial.println(moisture);
+
+  delay(1000); // wait 1 second
+}
