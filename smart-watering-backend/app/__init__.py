@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_cors import CORS
@@ -8,9 +9,10 @@ import os
 # Initialize extensions (no app yet)
 db = SQLAlchemy()
 ma = Marshmallow()
-
+migrate = Migrate()
 # Load environment variables
 load_dotenv()
+SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-secret')
 
 def create_app():
     app = Flask(__name__)
@@ -23,6 +25,7 @@ def create_app():
     # Initialize extensions
     db.init_app(app)
     ma.init_app(app)
+    migrate.init_app(app, db)
     CORS(app)
 
     # Register blueprints

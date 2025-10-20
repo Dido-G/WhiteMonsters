@@ -68,16 +68,16 @@ const openPlantPage = (plantId: string) => {
   if (!plant) return Alert.alert("Plant not found");
 
   router.push({
-    pathname: "/(tabs)/plant/[id]",
-    params: {
-      id: plant.id,
-      envId: environment?.id,
-      name: plant.name,
-      lastWatered: plant.lastWatered,
-      moisture: plant.moisture,
-      light: plant.light,
-    },
-  });
+  pathname: "/(tabs)/plant/[id]",
+  params: {
+    id: plant.id.toString(),          // convert numbers to string
+    envId: environment?.id?.toString(),
+    name: plant.name,
+    lastWatered: plant.lastWatered || undefined,
+    moisture: plant.moisture?.toString(),
+    light: plant.light?.toString(),
+  },
+});
 };
 
   // ===== Add Plant =====

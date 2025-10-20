@@ -36,6 +36,33 @@ def get_environments():
         return jsonify({"error": str(e)}), 400
 
 
+@env_bp.route('/delete/<int:env_id>', methods=['DELETE'])
+def delete_environment(env_id):
+    try:
+        env = Environment.query.get(env_id)
+        if not env:
+            return jsonify({"error": "Environment not found"}), 404
+        
+        db.session.delete(env)
+        db.session.commit()
+        return jsonify({"message": "Environment deleted"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+@env_bp.route('/update/<int:env_id>', methods=['PUT'])
+def update_environment(env_id):
+    data = request.get_json()
+    try:
+        env = Environment.query.get(env_id)
+        if not env:
+            return jsonify({"error": "Environment not found"}), 404
+        
+        env.name = data.get('name', env.name)
+        db.session.commit()
+        return jsonify({"message": "Environment updated"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
 #POST http://127.0.0.1:5000/environment/add
 
 #{

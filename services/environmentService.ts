@@ -1,6 +1,6 @@
 // environmentService.ts
 
-const API_URL = "http://192.168.3.23:5000/environment";
+const API_URL = "http://10.183.99.207:5000/environment";
 export const createEnvironment = async (name: string, userId: number) => {
   try {
     const response = await fetch(`${API_URL}/add`, {
@@ -68,12 +68,8 @@ export const updateEnvironment = async (id: string, name: string) => {
 };
 export const deleteEnvironment = async (id: string) => {
   try {
-    const response = await fetch(`${API_URL}/delete`, {
+    const response = await fetch(`${API_URL}/delete/${id}`, {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ id }),
     });
 
     const data = await response.json() as { error?: string; [key: string]: any };
