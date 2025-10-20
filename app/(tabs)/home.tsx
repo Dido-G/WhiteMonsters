@@ -105,7 +105,7 @@ export default function HomeScreen() {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.card}
-            onPress={() => router.push(`/environment/${item.id}`)}
+            onPress={() => router.push({ pathname: "/(tabs)/environment/[id]", params: { id: item.id } })}
           >
             <Ionicons
               name="leaf-outline"
