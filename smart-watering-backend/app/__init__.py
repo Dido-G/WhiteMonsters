@@ -11,6 +11,7 @@ ma = Marshmallow()
 
 # Load environment variables
 load_dotenv()
+SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-secret')
 
 def create_app():
     app = Flask(__name__)
