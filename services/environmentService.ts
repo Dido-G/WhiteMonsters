@@ -1,7 +1,7 @@
 // environmentService.ts
 export const createEnvironment = async (name: string, userId: number) => {
   try {
-    const response = await fetch('http://10.179.74.108:5000/environment/add', {
+    const response = await fetch('http://10.183.99.188:5000/environment/add', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
