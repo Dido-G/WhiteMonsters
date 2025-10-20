@@ -1,4 +1,4 @@
-const API_URL = "http://10.183.99.207:5000/plants"; // match your Flask blueprint route
+const API_URL = "http://192.168.3.23:5000/plants"; // match your Flask blueprint route
 
 export const createPlant = async (name: string, environmentId: string, plantType: string = "default") => {
 

@@ -202,6 +202,7 @@ export default function HomeScreen() {
               >
                 <Text style={{ color: "#fff" }}>Add</Text>
               </TouchableOpacity>
+              
             </View>
           </View>
         </View>

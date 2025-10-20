@@ -1,6 +1,6 @@
 // environmentService.ts
 
-const API_URL = "http://10.183.99.207:5000/environment";
+const API_URL = "http://192.168.3.23:5000/environment";
 export const createEnvironment = async (name: string, userId: number) => {
   try {
     const response = await fetch(`${API_URL}/add`, {
@@ -26,7 +26,6 @@ export const createEnvironment = async (name: string, userId: number) => {
   
 };
 
-
 export const getEnvironments = async (userId: number) => {
   try {
     const response = await fetch(`${API_URL}/get?user_id=${userId}`);
@@ -45,3 +44,49 @@ export const getEnvironments = async (userId: number) => {
     throw err; 
   }
 };
+
+export const updateEnvironment = async (id: string, name: string) => {
+  try {
+    const response = await fetch(`${API_URL}/update`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id, name }),
+    });
+    const data = await response.json() as { error?: string; [key: string]: any };
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to update environment');
+    }
+
+    return data;
+  } catch (err) {
+    console.error('Error updating environment:', err);
+    throw err;
+  }
+};
+export const deleteEnvironment = async (id: string) => {
+  try {
+    const response = await fetch(`${API_URL}/delete`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id }),
+    });
+
+    const data = await response.json() as { error?: string; [key: string]: any };
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to delete environment');
+    }
+
+    return data;
+  } catch (err) {
+    console.error('Error deleting environment:', err);
+    throw err;
+  }
+};
+
+

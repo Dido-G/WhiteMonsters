@@ -1,30 +1,36 @@
+// app/(tabs)/plant/[id].tsx
 import { useLocalSearchParams } from "expo-router";
 import { View, Text, StyleSheet } from "react-native";
-import { useEffect, useState } from "react";
-
 
 export default function PlantScreen() {
-    const { id } = useLocalSearchParams<{ id?: string }>();
-    const [plant, setPlant] = useState<any>(null);
-    useEffect(() => {
-    if (id) {
-        const plantId = Number(plant.id);
-    }
-    }, [id]);
+  const { id, name, lastWatered, moisture, light } = useLocalSearchParams<{
+    id?: string;
+    name?: string;
+    lastWatered?: string;
+    moisture?: string;
+    light?: string;
+  }>();
 
-    if (!plant) return <Text>Loading...</Text>;
+  if (!id) return <Text>Plant not found</Text>;
 
-    return (
-        <View style={styles.container}>
-            <Text style={styles.title}>{plant.name}</Text>
-            <Text>Last Watered: {plant.lastWatered}</Text>
-            <Text>Soil Humidity: {plant.soilHumidity}%</Text>
-            <Text>Light Level: {plant.lightLevel}</Text>
-        </View>
-    );
-    }
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>{name}</Text>
+      <Text style={styles.label}>ID: {id}</Text>
+      <Text style={styles.label}>Last Watered: {lastWatered}</Text>
+      <Text style={styles.label}>Moisture: {moisture}</Text>
+      <Text style={styles.label}>Light Level: {light}</Text>
+    </View>
+  );
+}
 
-    const styles = StyleSheet.create({
-    container: { flex: 1, padding: 20, backgroundColor: "#F0F4EF" },
-    title: { fontSize: 26, fontWeight: "600", marginBottom: 20, color: "#1A5D3B" },
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 20, backgroundColor: "#F0F4EF" },
+  title: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#1A5D3B",
+    marginBottom: 16,
+  },
+  label: { fontSize: 18, color: "#4F6F52", marginBottom: 6 },
 });
