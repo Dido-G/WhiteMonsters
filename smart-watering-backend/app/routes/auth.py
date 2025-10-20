@@ -69,4 +69,11 @@ def login():
         algorithm='HS256'
     )
 
-    return jsonify({'success': True, 'token': token})
+    return jsonify({
+        'success': True,
+        'token': token,
+        'user': {
+            'id': user.id,
+            'username': user.username
+            }
+    })

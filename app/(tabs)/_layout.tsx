@@ -27,14 +27,6 @@ export default function Layout() {
           />
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => navigate("/friends")}>
-          <Ionicons
-            name="people-outline"
-            size={26}
-            color={pathname === "/friends" ? "#1A5D3B" : "#9E9E9E"}
-          />
-        </TouchableOpacity>
-
         <TouchableOpacity onPress={() => navigate("/news")}>
           <Ionicons
             name="newspaper-outline"

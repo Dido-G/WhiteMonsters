@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, Text, TextInput, TouchableOpacity, Alert } from "react-native";
 import { useRouter } from "expo-router";
 import { login } from "../../services/authService"; // your backend API call
+import * as SecureStore from 'expo-secure-store';
 
 export default function Login() {
   const router = useRouter();
@@ -9,26 +10,33 @@ export default function Login() {
   const [password, setPassword] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
 
-  const handleLogin = async () => {
-    if (!username || !password) {
-      Alert.alert("Error", "Please enter both username and password");
-      return;
-    }
+const handleLogin = async () => {
+  if (!username || !password) {
+    Alert.alert("Error", "Please enter both username and password");
+    return;
+  }
 
-    setLoading(true);
-    try {
-      const data = await login(username, password); // pass as separate arguments
-      console.log("Logged in:", data);
+  setLoading(true);
+  try {
+    const data = await login(username, password) as { token: string; user: { id: number; username: string } }; // returns { token: "...", user: {...} }
+    console.log("Logged in:", data);
 
-      // Optionally save token to SecureStore here
+    // save user info to secure storage
+    await SecureStore.setItemAsync('token', data.token);
+    await SecureStore.setItemAsync("userId", data.user.id.toString());
+    await SecureStore.setItemAsync("username", data.user.username);
 
-      router.replace("/"); // Navigate to main app
-    } catch (error: any) {
-      Alert.alert("Login failed", error.message || "Unknown error");
-    } finally {
-      setLoading(false);
-    }
-  };
+
+    const expiresAt = Date.now() + 60 * 60 * 1000; // 1 day from now
+    await SecureStore.setItemAsync('tokenExpiry', expiresAt.toString());
+
+    router.replace("/home"); // Navigate to main app
+  } catch (error: any) {
+    Alert.alert("Login failed", error.message || "Unknown error");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <View style={{ flex: 1, backgroundColor: "#397F54", justifyContent: "center", alignItems: "center" }}>

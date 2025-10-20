@@ -12,7 +12,7 @@ export default function SignUp() {
     try {
       await signupUser({ username, password });
       Alert.alert('Success', 'Account created! Please login.');
-      router.push('/login' as any); // navigate to login
+      router.push('/login');
     } catch (error: any) {
       Alert.alert('Sign up failed', error.message || 'Unknown error');
     }

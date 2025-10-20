@@ -15,9 +15,9 @@ export default function PlantScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{name}</Text>
-      <Text style={styles.label}>Last Watered: {lastWatered ? new Date(lastWatered).toLocaleString() : "Never"}</Text>
-      <Text style={styles.label}>Moisture: {moisture ?? "Unknown"}</Text>
-      <Text style={styles.label}>Light Level: {light ?? "Unknown"}</Text>
+      <Text style={styles.label}>Last Watered: {lastWatered}</Text>
+      <Text style={styles.label}>Moisture: {moisture}</Text>
+      <Text style={styles.label}>Light Level: {light}</Text>
     </View>
   );
 }
