@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     Alert,
     FlatList,
@@ -11,28 +11,20 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
-import { createEnvironment } from "services/environmentService"; // adjust path if needed
+import { createEnvironment, getEnvironments } from "services/environmentService";
 
-
+interface Environment {
+  id: string;
+  name: string;
+  health: string;
+  fill: number;
+  plants: any[];
+}
 
 export default function HomeScreen() {
   const router = useRouter();
-  const [environments, setEnvironments] = useState([
-    {
-      id: "1",
-      name: "Living Room",
-      health: "good",
-      fill: 0.9,
-      plants: ["Monstera", "Snake Plant"],
-    },
-    {
-      id: "2",
-      name: "Balcony",
-      health: "medium",
-      fill: 0.6,
-      plants: ["Tomato", "Basil"],
-    },
-  ]);
+  const [environments, setEnvironments] = useState<Environment[]>([]);
+  
 
   const [showModal, setShowModal] = useState(false);
   const [newEnvName, setNewEnvName] = useState("");
@@ -57,6 +49,29 @@ export default function HomeScreen() {
     }
   };
 
+  useEffect(() => {
+    const userId = 1; // Example user id
+    getEnvironments(userId)
+      .then((data) => {
+        console.log("Environments fetched successfully:", data);
+
+        // Map backend data to your frontend model
+    const mappedEnvs: Environment[] = data.map((env: any) => ({
+        id: env.id.toString(),
+        name: env.name,
+        health: "medium",   // default value
+        fill: 0.5,          // default value
+        plants: [],         // default empty array
+      }));
+
+      setEnvironments(mappedEnvs);
+
+      })
+      .catch((error) => {
+        console.error("Error fetching environments:", error);
+      });
+  }, []);
+
   /** ➕ Add environment modal **/
   const openAddModal = () => {
     setShowModal(true);
@@ -69,7 +84,7 @@ export default function HomeScreen() {
   }
 
   try {
-    // ✅ Example user id (replace with actual logged-in user later)
+    // replace with actual logged-in user later
     const userId = 1;
 
     // 🔥 Call backend
@@ -124,7 +139,12 @@ export default function HomeScreen() {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.card}
-            onPress={() => router.push({ pathname: "/(tabs)/environment/[id]", params: { id: item.id } })}
+            onPress={() =>
+                router.push({
+                    pathname: "/(tabs)/environment/[id]",
+                    params: { id: item.id, plants: JSON.stringify(item.plants) },
+                })
+            }
           >
             <Ionicons
               name="leaf-outline"

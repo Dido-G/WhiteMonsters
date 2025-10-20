@@ -1,43 +1,152 @@
-import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, Modal, TextInput, Alert } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  FlatList,
+  Modal,
+  TextInput,
+  Alert,
+} from "react-native";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
+import { createPlant, getPlantsByEnvironment } from "services/plantService";
 
+// ===== Types =====
+interface Plant {
+  id: string;
+  name: string;
+  lastWatered: string;
+  moisture: string;
+  light: string;
+}
+
+interface Environment {
+  id: string;
+  name: string;
+  plants: Plant[];
+}
+
+// ===== Component =====
 export default function EnvironmentPage() {
-  const { id } = useLocalSearchParams();
   const router = useRouter();
-  const [plants, setPlants] = useState<string[]>([]);
-  const [showModal, setShowModal] = useState(false);
-  const [newPlant, setNewPlant] = useState("");
+  const { id, plants } = useLocalSearchParams();
 
-  const addPlant = () => {
-    if (!newPlant.trim()) {
-      Alert.alert("Please enter a plant name!");
-      return;
-    }
-    setPlants((prev) => [...prev, newPlant.trim()]);
-    setNewPlant("");
-    setShowModal(false);
+  // Ensure single string values
+  const envId = Array.isArray(id) ? id[0] : id;
+  const plantsString = Array.isArray(plants) ? plants[0] : plants;
+  const initialPlants: Plant[] = plantsString ? JSON.parse(plantsString) : [];
+
+  // ===== State =====
+  const [environment, setEnvironment] = useState<Environment | null>({
+    id: envId || "",
+    name: "Environment Name",
+    plants: initialPlants,
+  });
+  const [plantList, setPlantList] = useState<Plant[]>(initialPlants);
+  const [showModal, setShowModal] = useState(false);
+  const [newPlantName, setNewPlantName] = useState("");
+
+  // ===== Helpers =====
+  const getPlantById = (plantId: string): Plant | null => {
+    return plantList.find((p) => p.id === plantId) || null;
   };
 
+
+useEffect(() => {
+  if (envId) {
+    getPlantsByEnvironment(envId)
+      .then((data) => setPlantList(data))
+      .catch((err) => console.error(err));
+  }
+}, [plantList]);
+
+
+const openPlantPage = (plantId: string) => {
+  const plant = getPlantById(plantId);
+  if (!plant) return Alert.alert("Plant not found");
+
+  router.push({
+    pathname: "/(tabs)/plant/[id]",
+    params: {
+      id: plant.id,
+      envId: environment?.id,
+      name: plant.name,
+      lastWatered: plant.lastWatered,
+      moisture: plant.moisture,
+      light: plant.light,
+    },
+  });
+};
+
+  // ===== Add Plant =====
+const handleAddPlant = async () => {
+  if (!newPlantName.trim()) {
+    Alert.alert("Please enter a name!");
+    return;
+  }
+  if (!envId) {
+    Alert.alert("Error", "Environment ID missing");
+    return;
+  }
+
+  try {
+    const createdPlant = await createPlant(newPlantName.trim(), envId);
+
+    const newPlant: Plant = {
+      id: createdPlant.id,
+      name: createdPlant.name,
+      lastWatered: createdPlant.last_watered,
+      moisture: createdPlant.moisture,
+      light: createdPlant.light,
+    };
+
+    setEnvironment((prev) =>
+      prev ? { ...prev, plants: [...prev.plants, newPlant] } : prev
+    );
+
+    setShowModal(false);
+    setNewPlantName("");
+    Alert.alert("Added!", `${newPlant.name} plant added.`);
+  } catch (err: any) {
+    console.error(err);
+    Alert.alert("Error", err.message || "Failed to add plant");
+  }
+};
+
+
+  if (!environment) return <Text style={{ margin: 20 }}>Loading...</Text>;
+
+  // ===== Render =====
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={() => router.back()}>
         <Ionicons name="arrow-back" size={26} color="#1A5D3B" />
       </TouchableOpacity>
-      <Text style={styles.title}>Environment {id}</Text>
 
-      {plants.length === 0 ? (
+      <Text style={styles.title}>{environment.name}</Text>
+
+      {plantList.length === 0 ? (
         <Text style={styles.emptyText}>No plants yet 🌱</Text>
       ) : (
         <FlatList
-          data={plants}
-          keyExtractor={(item, i) => i.toString()}
+          data={plantList}
+          keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <View style={styles.plantBox}>
+            <TouchableOpacity
+              style={styles.plantBox}
+              onPress={() => openPlantPage(item.id)}
+            >
               <Ionicons name="leaf-outline" size={22} color="#1A5D3B" />
-              <Text style={styles.plantText}>{item}</Text>
-            </View>
+              <View style={{ marginLeft: 10 }}>
+                <Text style={styles.plantText}>{item.name}</Text>
+                <Text style={styles.plantInfo}>Last watered: {item.lastWatered}</Text>
+                <Text style={styles.plantInfo}>
+                  Moisture: {item.moisture} | Light: {item.light}
+                </Text>
+              </View>
+            </TouchableOpacity>
           )}
         />
       )}
@@ -47,15 +156,15 @@ export default function EnvironmentPage() {
         <Ionicons name="add" size={32} color="#fff" />
       </TouchableOpacity>
 
-      {/* Modal for new plant name */}
+      {/* Modal for new plant */}
       <Modal transparent visible={showModal} animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalBox}>
             <Text style={styles.modalTitle}>Add Plant</Text>
             <TextInput
               placeholder="Enter plant name..."
-              value={newPlant}
-              onChangeText={setNewPlant}
+              value={newPlantName}
+              onChangeText={setNewPlantName}
               style={styles.input}
             />
             <View style={styles.modalButtons}>
@@ -67,7 +176,7 @@ export default function EnvironmentPage() {
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.btn, { backgroundColor: "#1A5D3B" }]}
-                onPress={addPlant}
+                onPress={handleAddPlant}
               >
                 <Text style={{ color: "#fff" }}>Add</Text>
               </TouchableOpacity>
@@ -79,6 +188,7 @@ export default function EnvironmentPage() {
   );
 }
 
+// ===== Styles =====
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F0F4EF", padding: 20 },
   title: {
@@ -106,7 +216,8 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 2,
   },
-  plantText: { fontSize: 18, color: "#1A5D3B", marginLeft: 8 },
+  plantText: { fontSize: 18, color: "#1A5D3B", fontWeight: "500" },
+  plantInfo: { fontSize: 14, color: "#4F6F52" },
   fab: {
     position: "absolute",
     bottom: 60,

@@ -1,7 +1,9 @@
 // environmentService.ts
+
+const API_URL = "http://10.183.99.188:5000/environment";
 export const createEnvironment = async (name: string, userId: number) => {
   try {
-    const response = await fetch('http://10.183.99.188:5000/environment/add', {
+    const response = await fetch(`${API_URL}/add`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -15,9 +17,28 @@ export const createEnvironment = async (name: string, userId: number) => {
       throw new Error(data.error || 'Failed to create environment');
     }
 
-    return data; // { message: "Environment created", id: 1 }
+    return data; 
   } catch (err) {
     console.error('Error creating environment:', err);
-    throw err; // re-throw so the component can handle it
+    throw err;
+  }
+
+  
+};
+
+
+export const getEnvironments = async (userId: number) => {
+  try {
+    const response = await fetch(`${API_URL}/get?user_id=${userId}`);
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to fetch environments');
+    }
+
+    return data; 
+  } catch (err) {
+    console.error('Error fetching environments:', err);
+    throw err; 
   }
 };
