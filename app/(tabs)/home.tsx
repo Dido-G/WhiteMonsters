@@ -1,11 +1,44 @@
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  FlatList,
+  StyleSheet,
+  Modal,
+  TextInput,
+  Alert,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useRouter } from "expo-router";
 
 export default function HomeScreen() {
-  const environments = [
-    { id: "1", name: "Living Room", health: "good" },
-    { id: "2", name: "Balcony", health: "medium" },
-    { id: "3", name: "Bedroom", health: "low" },
+  const router = useRouter();
+  const [environments, setEnvironments] = useState([
+    {
+      id: "1",
+      name: "Living Room",
+      health: "good",
+      fill: 0.9,
+      plants: ["Monstera", "Snake Plant"],
+    },
+    {
+      id: "2",
+      name: "Balcony",
+      health: "medium",
+      fill: 0.6,
+      plants: ["Tomato", "Basil"],
+    },
+  ]);
+
+  const [showModal, setShowModal] = useState(false);
+  const [newEnvName, setNewEnvName] = useState("");
+
+  const sensorData = [
+    { id: "1", icon: "water-outline", label: "Moisture", value: "65%" },
+    { id: "2", icon: "sunny-outline", label: "Light", value: "Medium" },
+    { id: "3", icon: "thermometer-outline", label: "Temp", value: "22°C" },
+    { id: "4", icon: "leaf-outline", label: "Health", value: "Good" },
   ];
 
   const getHealthColor = (health: string) => {
@@ -21,41 +54,119 @@ export default function HomeScreen() {
     }
   };
 
+  /** ➕ Add environment modal **/
+  const openAddModal = () => {
+    setShowModal(true);
+  };
+
+  const handleAddEnvironment = () => {
+    if (!newEnvName.trim()) {
+      Alert.alert("Please enter a name!");
+      return;
+    }
+    const newId = (environments.length + 1).toString();
+    const newEnv = {
+      id: newId,
+      name: newEnvName.trim(),
+      health: "medium",
+      fill: 0.5,
+      plants: [],
+    };
+    setEnvironments([...environments, newEnv]);
+    setShowModal(false);
+    setNewEnvName("");
+    Alert.alert("Created!", `${newEnv.name} environment added.`);
+  };
+
   return (
     <View style={styles.container}>
-      {/* Header */}
       <Text style={styles.welcome}>Good morning, Vanko 🌱</Text>
+
+      {/* Sensor Boxes */}
+      <View style={styles.sensorRow}>
+        {sensorData.map((item) => (
+          <View key={item.id} style={styles.sensorBox}>
+            <Ionicons name={item.icon as any} size={24} color="#1A5D3B" />
+            <Text style={styles.sensorLabel}>{item.label}</Text>
+            <Text style={styles.sensorValue}>{item.value}</Text>
+          </View>
+        ))}
+      </View>
+
       <Text style={styles.subtitle}>Your plant environments</Text>
 
-      {/* Environment cards */}
+      {/* Environments */}
       <FlatList
         data={environments}
         keyExtractor={(item) => item.id}
         numColumns={2}
         columnWrapperStyle={{ justifyContent: "space-between" }}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{ paddingBottom: 120 }}
         renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Ionicons name="leaf-outline" size={28} color={getHealthColor(item.health)} />
-            <Text style={styles.cardTitle}>{item.name}</Text>
-            <View
-              style={[styles.healthBar, { backgroundColor: getHealthColor(item.health) }]}
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() => router.push(`/environment/${item.id}`)}
+          >
+            <Ionicons
+              name="leaf-outline"
+              size={28}
+              color={getHealthColor(item.health)}
             />
-          </View>
+            <Text style={styles.cardTitle}>{item.name}</Text>
+            <View style={styles.healthBarContainer}>
+              <View
+                style={[
+                  styles.healthBarFill,
+                  {
+                    backgroundColor: getHealthColor(item.health),
+                    width: `${item.fill * 100}%`,
+                  },
+                ]}
+              />
+            </View>
+            <Text style={styles.plantCount}>{item.plants.length} plants</Text>
+          </TouchableOpacity>
         )}
       />
 
-      {/* Floating Add Button */}
-      <TouchableOpacity style={styles.fab}>
+      {/* Floating Button */}
+      <TouchableOpacity style={styles.fab} onPress={openAddModal}>
         <Ionicons name="add" size={32} color="#fff" />
       </TouchableOpacity>
 
-      {/* Bottom Navigation */}
-      
+      {/* Modal for environment name input */}
+      <Modal transparent visible={showModal} animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>New Environment</Text>
+            <TextInput
+              placeholder="Enter name..."
+              style={styles.input}
+              value={newEnvName}
+              onChangeText={setNewEnvName}
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalButtonCancel}
+                onPress={() => setShowModal(false)}
+              >
+                <Text style={{ color: "#fff" }}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.modalButtonAdd}
+                onPress={handleAddEnvironment}
+              >
+                <Text style={{ color: "#fff" }}>Add</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
 
+/** STYLES **/
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -63,17 +174,38 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   welcome: {
-    fontSize: 22,
+    fontSize: 32,
+    alignSelf: "center",
     fontWeight: "600",
     color: "#1A5D3B",
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 26,
+    alignSelf: "center",
     color: "#4F6F52",
     marginVertical: 10,
   },
+  sensorRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 20,
+  },
+  sensorBox: {
+    flex: 1,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    paddingVertical: 14,
+    marginHorizontal: 4,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  sensorLabel: { fontSize: 14, color: "#4F6F52", marginTop: 4 },
+  sensorValue: { fontSize: 16, fontWeight: "600", color: "#1A5D3B" },
   card: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#fff",
     borderRadius: 16,
     padding: 16,
     width: "48%",
@@ -83,17 +215,15 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 3,
   },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#1A5D3B",
-    marginTop: 8,
-  },
-  healthBar: {
+  cardTitle: { fontSize: 16, fontWeight: "500", color: "#1A5D3B", marginTop: 8 },
+  healthBarContainer: {
     height: 6,
+    backgroundColor: "#D9E2DA",
     borderRadius: 3,
     marginTop: 8,
   },
+  healthBarFill: { height: 6, borderRadius: 3 },
+  plantCount: { fontSize: 13, color: "#4F6F52", marginTop: 6 },
   fab: {
     position: "absolute",
     bottom: 70,
@@ -106,21 +236,44 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     elevation: 6,
   },
-  navbar: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: "#fff",
-    flexDirection: "row",
-    justifyContent: "space-around",
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "center",
     alignItems: "center",
-    height: 60,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 5,
+  },
+  modalBox: {
+    width: "80%",
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 20,
+  },
+  modalTitle: { fontSize: 20, fontWeight: "600", color: "#1A5D3B" },
+  input: {
+    borderWidth: 1,
+    borderColor: "#D9E2DA",
+    borderRadius: 10,
+    padding: 10,
+    marginTop: 10,
+    fontSize: 16,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 20,
+  },
+  modalButtonCancel: {
+    backgroundColor: "#999",
+    padding: 10,
+    borderRadius: 10,
+    width: "45%",
+    alignItems: "center",
+  },
+  modalButtonAdd: {
+    backgroundColor: "#1A5D3B",
+    padding: 10,
+    borderRadius: 10,
+    width: "45%",
+    alignItems: "center",
   },
 });
