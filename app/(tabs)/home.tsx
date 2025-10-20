@@ -1,16 +1,19 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  FlatList,
-  StyleSheet,
-  Modal,
-  TextInput,
-  Alert,
-} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useState } from "react";
+import {
+    Alert,
+    FlatList,
+    Modal,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import { createEnvironment } from "services/environmentService"; // adjust path if needed
+
+
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -59,24 +62,40 @@ export default function HomeScreen() {
     setShowModal(true);
   };
 
-  const handleAddEnvironment = () => {
-    if (!newEnvName.trim()) {
-      Alert.alert("Please enter a name!");
-      return;
-    }
-    const newId = (environments.length + 1).toString();
+ const handleAddEnvironment = async () => {
+  if (!newEnvName.trim()) {
+    Alert.alert("Please enter a name!");
+    return;
+  }
+
+  try {
+    // ✅ Example user id (replace with actual logged-in user later)
+    const userId = 1;
+
+    // 🔥 Call backend
+    const result = await createEnvironment(newEnvName.trim(), userId);
+
+    // The API might return { message, id }
     const newEnv = {
-      id: newId,
+      id: result.id?.toString() || (environments.length + 1).toString(),
       name: newEnvName.trim(),
       health: "medium",
       fill: 0.5,
       plants: [],
     };
+
+    // ✅ Update local state
     setEnvironments([...environments, newEnv]);
     setShowModal(false);
     setNewEnvName("");
+
     Alert.alert("Created!", `${newEnv.name} environment added.`);
-  };
+  } catch (error: any) {
+    console.error(error);
+    Alert.alert("Error", error.message || "Failed to create environment");
+  }
+};
+
 
   return (
     <View style={styles.container}>
@@ -177,6 +196,8 @@ const styles = StyleSheet.create({
     fontSize: 32,
     alignSelf: "center",
     fontWeight: "600",
+    marginBottom: "5%",
+    marginTop: "3%",
     color: "#1A5D3B",
   },
   subtitle: {

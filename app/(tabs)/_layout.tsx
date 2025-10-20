@@ -3,6 +3,8 @@ import { Stack, Slot, usePathname, router } from "expo-router";
 import { View, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
+
+
 export default function Layout() {
   const pathname = usePathname();
 
