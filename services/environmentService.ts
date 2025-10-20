@@ -1,6 +1,6 @@
 // environmentService.ts
 
-const API_URL = "http://10.183.99.188:5000/environment";
+const API_URL = "http://10.183.99.207:5000/environment";
 export const createEnvironment = async (name: string, userId: number) => {
   try {
     const response = await fetch(`${API_URL}/add`, {
@@ -11,7 +11,7 @@ export const createEnvironment = async (name: string, userId: number) => {
       body: JSON.stringify({ name, user_id: userId }),
     });
 
-    const data = await response.json();
+    const data = await response.json() as { error?: string; [key: string]: any };
 
     if (!response.ok) {
       throw new Error(data.error || 'Failed to create environment');
@@ -33,7 +33,10 @@ export const getEnvironments = async (userId: number) => {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || 'Failed to fetch environments');
+      const errorMsg = (data && typeof data === 'object' && 'error' in data)
+        ? (data as { error?: string }).error
+        : undefined;
+      throw new Error(errorMsg || 'Failed to fetch environments');
     }
 
     return data; 

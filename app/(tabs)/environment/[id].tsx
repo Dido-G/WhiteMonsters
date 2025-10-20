@@ -60,7 +60,7 @@ useEffect(() => {
       .then((data) => setPlantList(data))
       .catch((err) => console.error(err));
   }
-}, [plantList]);
+}, [envId]);
 
 
 const openPlantPage = (plantId: string) => {
@@ -102,6 +102,10 @@ const handleAddPlant = async () => {
       light: createdPlant.light,
     };
 
+    // ✅ Append new plant directly to plantList
+    setPlantList((prev) => [...prev, newPlant]);
+
+    // Optional: keep environment state in sync
     setEnvironment((prev) =>
       prev ? { ...prev, plants: [...prev.plants, newPlant] } : prev
     );

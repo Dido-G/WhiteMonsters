@@ -55,8 +55,9 @@ export default function HomeScreen() {
       .then((data) => {
         console.log("Environments fetched successfully:", data);
 
-        // Map backend data to your frontend model
-    const mappedEnvs: Environment[] = data.map((env: any) => ({
+    // Map backend data to your frontend model
+    if (Array.isArray(data)) {
+      const mappedEnvs: Environment[] = data.map((env: any) => ({
         id: env.id.toString(),
         name: env.name,
         health: "medium",   // default value
@@ -65,6 +66,10 @@ export default function HomeScreen() {
       }));
 
       setEnvironments(mappedEnvs);
+    } else {
+      setEnvironments([]);
+      console.warn("Fetched environments data is not an array:", data);
+    }
 
       })
       .catch((error) => {
@@ -88,7 +93,7 @@ export default function HomeScreen() {
     const userId = 1;
 
     // 🔥 Call backend
-    const result = await createEnvironment(newEnvName.trim(), userId);
+    const result = await createEnvironment(newEnvName.trim(), userId) as { message?: string; id?: number };
 
     // The API might return { message, id }
     const newEnv = {
