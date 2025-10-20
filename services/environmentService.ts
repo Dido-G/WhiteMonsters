@@ -1,6 +1,6 @@
 // environmentService.ts
 
-const API_URL = "http://192.168.3.23:5000/environment";
+const API_URL = "http://10.183.99.188:5000/environment";
 export const createEnvironment = async (name: string, userId: number) => {
   try {
     const response = await fetch(`${API_URL}/add`, {

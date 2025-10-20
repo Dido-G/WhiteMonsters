@@ -11,6 +11,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import * as SecureStore from "expo-secure-store";
 import { createEnvironment, getEnvironments } from "services/environmentService";
 
 interface Environment {
@@ -36,6 +37,22 @@ export default function HomeScreen() {
     { id: "4", icon: "leaf-outline", label: "Health", value: "Good" },
   ];
 
+  const [userId, setUserId] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadUserData = async () => {
+      const storedId = await SecureStore.getItemAsync("userId");
+      const storedName = await SecureStore.getItemAsync("username");
+
+      if (storedId) setUserId(storedId);
+      if (storedName) setUsername(storedName);
+    };
+    loadUserData();
+  }, []);
+
+
+
   const getHealthColor = (health: string) => {
     switch (health) {
       case "good":
@@ -50,34 +67,33 @@ export default function HomeScreen() {
   };
 
   useEffect(() => {
-    const userId = 1; // Example user id
-    getEnvironments(userId)
+    if (!userId) return; // wait until userId is loaded
+
+    getEnvironments(parseInt(userId))
       .then((data) => {
         console.log("Environments fetched successfully:", data);
 
-    // Map backend data to your frontend model
-    if (Array.isArray(data)) {
-      const mappedEnvs: Environment[] = data.map((env: any) => ({
-        id: env.id.toString(),
-        name: env.name,
-        health: "medium",   // default value
-        fill: 0.5,          // default value
-        plants: [],         // default empty array
-      }));
+        if (Array.isArray(data)) {
+          const mappedEnvs: Environment[] = data.map((env: any) => ({
+            id: env.id.toString(),
+            name: env.name,
+            health: "medium",
+            fill: 0.5,
+            plants: [],
+          }));
 
-      setEnvironments(mappedEnvs);
-    } else {
-      setEnvironments([]);
-      console.warn("Fetched environments data is not an array:", data);
-    }
-
+          setEnvironments(mappedEnvs);
+        } else {
+          setEnvironments([]);
+          console.warn("Fetched environments data is not an array:", data);
+        }
       })
       .catch((error) => {
         console.error("Error fetching environments:", error);
       });
-  }, []);
+  }, [userId]);
 
-  /** ➕ Add environment modal **/
+
   const openAddModal = () => {
     setShowModal(true);
   };
@@ -89,12 +105,13 @@ export default function HomeScreen() {
   }
 
   try {
-    // replace with actual logged-in user later
-    const userId = 1;
+    if (!userId) {
+      Alert.alert("User ID not found. Please log in again.");
+      return;
+    }
 
-    // 🔥 Call backend
-    const result = await createEnvironment(newEnvName.trim(), userId) as { message?: string; id?: number };
-
+    const result = await createEnvironment(newEnvName.trim(), parseInt(userId)) as { message?: string; id?: number };
+    
     // The API might return { message, id }
     const newEnv = {
       id: result.id?.toString() || (environments.length + 1).toString(),
@@ -104,7 +121,6 @@ export default function HomeScreen() {
       plants: [],
     };
 
-    // ✅ Update local state
     setEnvironments([...environments, newEnv]);
     setShowModal(false);
     setNewEnvName("");
@@ -119,7 +135,9 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.welcome}>Good morning, Vanko 🌱</Text>
+      <Text style={styles.welcome}>
+      { username ? `Good morning, ${username}` : "Good morning"}
+      </Text>
 
       {/* Sensor Boxes */}
       <View style={styles.sensorRow}>

@@ -16,7 +16,6 @@ export default function PlantScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{name}</Text>
-      <Text style={styles.label}>ID: {id}</Text>
       <Text style={styles.label}>Last Watered: {lastWatered}</Text>
       <Text style={styles.label}>Moisture: {moisture}</Text>
       <Text style={styles.label}>Light Level: {light}</Text>
