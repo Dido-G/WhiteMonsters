@@ -1,4 +1,5 @@
-from flask import Blueprint
+from flask import Blueprint, jsonify, request
+from app.models import Environment, db
 env_bp = Blueprint('environment', __name__)
 
 @env_bp.route('/add', methods=['POST'])
@@ -12,6 +13,25 @@ def add_environment():
         db.session.add(env)
         db.session.commit()
         return jsonify({"message": "Environment created", "id": env.id}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+@env_bp.route('/get', methods=['GET'])
+def get_environments():
+    try:
+        # Get user_id from query parameters
+        user_id = request.args.get("user_id", type=int)
+        if user_id is None:
+            return jsonify({"error": "user_id is required"}), 400
+
+        # Fetch environments for this user
+        environments = Environment.query.filter_by(user_id=user_id).all()
+        
+        env_list = [
+            {"id": env.id, "name": env.name, "user_id": env.user_id} 
+            for env in environments
+        ]
+        return jsonify(env_list), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
