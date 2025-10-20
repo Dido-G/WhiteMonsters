@@ -19,7 +19,7 @@ class Environment(db.Model):
 class Plant(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
-    species = db.Column(db.String(50))
+    plant_type = db.Column(db.String(50))
     environment_id = db.Column(db.Integer, db.ForeignKey('environment.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     

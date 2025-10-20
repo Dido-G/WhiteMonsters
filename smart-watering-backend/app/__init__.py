@@ -29,9 +29,11 @@ def create_app():
     from app.routes.auth import auth_bp
     from app.routes.sensor import sensor_bp
     from app.routes.environment import env_bp
+    from app.routes.plants import pl_bp
 
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(sensor_bp, url_prefix='/sensor')
     app.register_blueprint(env_bp, url_prefix='/environment')
+    app.register_blueprint(pl_bp, url_prefix='/plants')
 
     return app
