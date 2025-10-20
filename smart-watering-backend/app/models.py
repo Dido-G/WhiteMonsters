@@ -27,7 +27,7 @@ class Plant(db.Model):
     ideal_humidity = db.Column(db.Float, nullable=True)
     last_watered = db.Column(db.DateTime, nullable=True)
     
-    environment = db.relationship('Environment', backref='plants')
+    #environment = db.relationship('Environment', backref='plants')
 
 
 class SensorData(db.Model):
